@@ -3,7 +3,7 @@
   file: path=/etc/pmm-certs state=directory
 
 - name: Generating default SSL Key
-  command: "openssl req -x509 -subj '/C=/ST=/L=/O=IT/CN={{ansible_fqdn}}' -nodes -days 3650 -newkey rsa:2048 -keyout /etc/pmm-certs/server.key -out /etc/pmm-certs/server.crt creates=/etc/pmm-certs/server.crt"
+  command: "openssl req -x509 -subj '/O=IT/CN={{ansible_fqdn}}' -nodes -days 3650 -newkey rsa:2048 -keyout /etc/pmm-certs/server.key -out /etc/pmm-certs/server.crt creates=/etc/pmm-certs/server.crt"
   when: "{{ pmm_server_default_cert }} == true"
 
 - name: Copying custom certificate files to remote.
@@ -34,12 +34,12 @@
     volumes_from:
     - pmm-data
     ports:
-    - "{{ pmm_server_http_port }}:80"
+#    - "{{ pmm_server_http_port }}:80"
     - "{{ pmm_server_https_port }}:443"
     restart_policy: always
   when:
-    - "{{ pmm_server_ENABLE_PROTECTION }} == false"
-    - "{{ pmm_server_ENABLE_SSL }} == true"
+    - pmm_server_ENABLE_PROTECTION == false
+    - pmm_server_ENABLE_SSL == true
     - cert_file.stat.exists == True
     - key_file.stat.exists == True
 
@@ -62,11 +62,10 @@
       SERVER_USER: "{{ pmm_server_username }}"
       SERVER_PASSWORD: "{{ pmm_server_password }}"
     ports:
-    - "{{ pmm_server_http_port }}:80"
     - "{{ pmm_server_https_port }}:443"
     restart_policy: always
   when:
-    - "{{ pmm_server_ENABLE_PROTECTION }} == true"
-    - "{{ pmm_server_ENABLE_SSL }} == true"
+    - pmm_server_ENABLE_PROTECTION == true
+    - pmm_server_ENABLE_SSL == true
     - cert_file.stat.exists == True
     - key_file.stat.exists == True
